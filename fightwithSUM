@@ -1,0 +1,89 @@
+### A Pokemon Types Table Plot In Python
+### Seaborn Approach:
+# References:
+# https://stackoverflow.com/questions/33158075/custom-annotation-seaborn-heatmap
+# https://stackoverflow.com/questions/40734343/artificial-tick-labels-for-seaborn-heatmaps
+# Pokemon Type Table Reference: https://img.pokemondb.net/images/typechart.png
+
+
+import seaborn as sns
+import numpy as np
+from matplotlib import pyplot as plt
+
+pokemon_types = ["Normal", "Fire", "Water", "Electric", "Grass", "Ice",
+                 "Fighting", "Poison", "Ground", "Flying", "Psychic",
+                 "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"]
+
+# A 2 Dimenstional Numpy Array Of Damage Multipliers For Attacking Pokemon:
+    
+damage_array = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1/2, 0, 1, 1, 1/2, 1],
+                    [1, 1/2, 1/2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1/2, 1, 1/2, 1, 2, 1],
+                    [1, 2, 1/2, 1, 1/2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1/2, 1, 1, 1],
+                    [1, 1, 2, 1/2, 1/2, 1, 1, 1, 0, 2, 1, 1, 1, 1, 1/2, 1, 1, 1],
+                    [1, 1/2, 2, 1, 1/2, 1, 1, 1/2, 2, 1/2, 1, 1/2, 2, 1, 1/2, 1, 1/2, 1],
+                    [1, 1/2, 1/2, 1, 2, 1/2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1/2, 1],
+                    [2, 1, 1, 1, 1, 2, 1, 1/2, 1, 1/2, 1/2, 1/2, 2, 0, 1, 2, 2, 1/2],
+                    [1, 1, 1, 1, 2, 1, 1, 1/2, 1/2, 1, 1, 1, 1/2, 1/2, 1, 1, 0, 2],
+                    [1, 2, 1, 2, 1/2, 1, 1, 2, 1, 0, 1, 1/2, 2, 1, 1, 1, 2, 1],
+                    [1, 1, 1, 1/2, 2, 1, 2, 1, 1, 1, 1, 2, 1/2, 1, 1, 1, 1/2, 1],
+                    [1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1/2, 1, 1, 1, 1, 0, 1/2, 1],
+                    [1, 1/2, 1, 1, 2, 1, 1/2, 1/2, 1, 1/2, 2, 1, 1, 1/2, 1, 2, 1/2, 1/2],
+                    [1, 2, 1, 1, 1, 2, 1/2, 1, 1/2, 2, 1, 2, 1, 1, 1, 1, 1/2, 1],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1/2, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1/2, 0],
+                    [1, 1, 1, 1, 1, 1, 1/2, 1, 1, 1, 2, 1, 1, 2, 1, 1/2, 1, 1/2],
+                    [1, 1/2, 1/2, 1/2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1/2, 2],
+                    [1, 1/2, 1, 1, 1, 1, 2, 1/2, 1, 1, 1, 1, 1, 1, 2, 2, 1/2, 1]])
+
+
+def calculate_modified_values(attacking_types, defending_types, chart):
+    modified_values = np.zeros((len(attacking_types), len(defending_types)), dtype=float)
+    for i, at in enumerate(attacking_types):
+        for j, df in enumerate(defending_types):
+            attacking_modifier = chart[pokemon_types.index(at)][pokemon_types.index(df)]
+            modified_values[i][j] = attacking_modifier
+    return modified_values
+
+# Get user input for attacking and defending types
+attacking_types = input("Enter the attacking Pokémon types (comma-separated): ").strip().split(',')
+defending_types = input("Enter the defending Pokémon types (comma-separated): ").strip().split(',')
+
+# Calculate attack values
+attack_values = calculate_modified_values(attacking_types, defending_types, damage_array)
+
+# Calculate the sum of all attack values
+total_attack_value = np.sum(attack_values)
+
+# Create a list of all possible combinations for attack
+attack_combinations = [(at, df) for at in attacking_types for df in defending_types]
+
+# Calculate the total values for all attack combinations
+total_attack_values = np.zeros(len(attack_combinations))
+for i, (at, df) in enumerate(attack_combinations):
+    total_attack_values[i] = np.sum(calculate_modified_values([at], [df], damage_array))
+
+# Create a list of all possible combinations for defense
+defense_combinations = [(df, at) for df in defending_types for at in attacking_types]
+
+# Calculate the total values for all defense combinations
+total_defense_values = np.zeros(len(defense_combinations))
+for i, (df, at) in enumerate(defense_combinations):
+    total_defense_values[i] = np.sum(calculate_modified_values([df], [at], damage_array))
+
+# Display the attack results
+print("Attack Values:")
+for i, (at, df) in enumerate(attack_combinations):
+    print(f"{at} vs. {df}: {total_attack_values[i]:.2f}")
+
+# Display the defense results
+print("\nDefense Values:")
+for i, (df, at) in enumerate(defense_combinations):
+    print(f"{df} vs. {at}: {total_defense_values[i]:.2f}")
+    
+    # Display the total attack value
+total_attack_value = np.sum(total_attack_values)
+total_defense_value = np.sum(total_defense_values)
+
+# Display the total attack value
+print(f"\nTotal Attack Value of {attacking_types}: {total_attack_value:.2f}")
+print(f"Total Defense Value {defending_types}: {total_defense_value:.2f}")
